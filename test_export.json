@@ -1,0 +1,111 @@
+{
+  "version": "1.0.0",
+  "export_time": "2026-05-25T23:27:08.673850",
+  "system": "agent_memory_system",
+  "data": {
+    "l1": [
+      {
+        "text": "用户输入1：你好",
+        "task_id": "session_test1",
+        "timestamp": 1779751628.6619613,
+        "session_id": "session_test1"
+      },
+      {
+        "text": "用户输入2：今天天气",
+        "task_id": "session_test1",
+        "timestamp": 1779751628.6619682,
+        "session_id": "session_test1"
+      },
+      {
+        "text": "临时上下文：正在处理",
+        "task_id": "session_test2",
+        "timestamp": 1779751628.6619728,
+        "session_id": "session_test2"
+      }
+    ],
+    "l2": [
+      {
+        "id": "l2_1779751628662075",
+        "text": "情景记忆0: 关于项目的重要讨论",
+        "metadata": {
+          "task_id": "session_test1"
+        },
+        "access_count": 0,
+        "last_access": 1779751628.6620784,
+        "timestamp": 1779751628.6620789
+      },
+      {
+        "id": "l2_1779751628662303",
+        "text": "情景记忆1: 关于项目的重要讨论",
+        "metadata": {
+          "task_id": "session_test1"
+        },
+        "access_count": 0,
+        "last_access": 1779751628.6623056,
+        "timestamp": 1779751628.6623058
+      },
+      {
+        "id": "l2_1779751628662435",
+        "text": "情景记忆2: 关于项目的重要讨论",
+        "metadata": {
+          "task_id": "session_test1"
+        },
+        "access_count": 0,
+        "last_access": 1779751628.662437,
+        "timestamp": 1779751628.662437
+      },
+      {
+        "id": "l2_1779751628662566",
+        "text": "情景记忆3: 关于项目的重要讨论",
+        "metadata": {
+          "task_id": "session_test1"
+        },
+        "access_count": 0,
+        "last_access": 1779751628.6625676,
+        "timestamp": 1779751628.6625679
+      },
+      {
+        "id": "l2_1779751628662690",
+        "text": "情景记忆4: 关于项目的重要讨论",
+        "metadata": {
+          "task_id": "session_test1"
+        },
+        "access_count": 0,
+        "last_access": 1779751628.6626916,
+        "timestamp": 1779751628.6626916
+      }
+    ],
+    "l3": [
+      {
+        "id": "用户::姓名",
+        "entity": "用户",
+        "attribute": "姓名",
+        "value": "张三",
+        "source": "system",
+        "confidence": 1.0,
+        "version": 1,
+        "timestamp": 1779751628.6631997
+      },
+      {
+        "id": "系统::版本",
+        "entity": "系统",
+        "attribute": "版本",
+        "value": "1.0.0",
+        "source": "system",
+        "confidence": 1.0,
+        "version": 1,
+        "timestamp": 1779751628.667219
+      },
+      {
+        "id": "配置::语言",
+        "entity": "配置",
+        "attribute": "语言",
+        "value": "中文",
+        "source": "system",
+        "confidence": 1.0,
+        "version": 1,
+        "timestamp": 1779751628.670551
+      }
+    ]
+  }
+}

@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  memory-system:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agent-memory-system
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    environment:
+      - LOG_LEVEL=INFO
+      - DATA_DIR=/app/data
+      - LOG_DIR=/app/logs
+      - L1_MAX_ITEMS=200
+      - L2_CLEANUP_DAYS=30
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+  # 可选：监控服务
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - memory-system
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    depends_on:
+      - prometheus
+
+volumes:
+  grafana_data:

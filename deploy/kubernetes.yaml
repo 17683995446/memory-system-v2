@@ -1,0 +1,114 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agent-memory-system
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: memory-system-config
+  namespace: agent-memory-system
+data:
+  LOG_LEVEL: INFO
+  L1_MAX_ITEMS: "200"
+  L2_CLEANUP_DAYS: "30"
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: memory-system
+  namespace: agent-memory-system
+  labels:
+    app: memory-system
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: memory-system
+  template:
+    metadata:
+      labels:
+        app: memory-system
+    spec:
+      containers:
+      - name: memory-system
+        image: agent-memory-system:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: memory-system-config
+        env:
+        - name: DATA_DIR
+          value: /data
+        - name: LOG_DIR
+          value: /logs
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1"
+        volumeMounts:
+        - name: data-storage
+          mountPath: /data
+        - name: logs-storage
+          mountPath: /logs
+      volumes:
+      - name: data-storage
+        persistentVolumeClaim:
+          claimName: memory-system-data
+      - name: logs-storage
+        emptyDir: {}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: memory-system-service
+  namespace: agent-memory-system
+spec:
+  selector:
+    app: memory-system
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5000
+  type: LoadBalancer
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: memory-system-data
+  namespace: agent-memory-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
