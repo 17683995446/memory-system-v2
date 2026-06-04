@@ -154,6 +154,15 @@ class L2Memory:
             del self._items[item_id]
             return True
     
+    def delete_by_key(self, key: str) -> bool:
+        """根据key（text）删除记忆项"""
+        with self._lock:
+            for item_id, item in list(self._items.items()):
+                if item.text == key:
+                    del self._items[item_id]
+                    return True
+            return False
+    
     def cleanup_old(self, days: int = 30) -> int:
         """清理过期数据"""
         with self._lock:

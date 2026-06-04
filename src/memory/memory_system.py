@@ -163,6 +163,21 @@ class MemorySystem:
         keywords = ["是", "等于", "名称", "叫", "定义", "规则", "必须", "禁止"]
         return any(kw in text for kw in keywords)
     
+    def delete(self, key: str) -> bool:
+        """删除指定key的记忆"""
+        with self._lock:
+            # 尝试从L1删除
+            l1_deleted = self.l1.delete_by_key(key)
+            # 尝试从L2删除
+            l2_deleted = self.l2.delete_by_key(key)
+            # 尝试从L3删除
+            l3_deleted = self.l3.delete_by_key(key)
+            
+            deleted = l1_deleted or l2_deleted or l3_deleted
+            if deleted:
+                self._logger.info(f"[Delete] Removed memory for key: {key}")
+            return deleted
+    
     def cleanup(self) -> None:
         """清理过期数据"""
         with self._lock:

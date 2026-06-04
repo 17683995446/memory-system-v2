@@ -215,8 +215,8 @@ class MultiLevelCache:
             enable_stats=True
         )
     
-    def get(self, key: str) -> Optional[Any]:
-        """获取缓存（L1 -> L2）"""
+    def get(self, key: str, default: Any = None) -> Any:
+        """获取缓存（L1 -> L2），支持默认值"""
         value = self.l1_cache.get(key)
         if value is not None:
             self._layer_stats['l1'] = self.l1_cache.get_stats()
@@ -230,7 +230,7 @@ class MultiLevelCache:
         
         self._layer_stats['l1'] = self.l1_cache.get_stats()
         self._layer_stats['l2'] = self.l2_cache.get_stats()
-        return None
+        return default
     
     def set(self, key: str, value: Any, ttl: Optional[float] = None) -> bool:
         """设置缓存（L1 + L2）"""
@@ -311,3 +311,8 @@ def get_cache_system() -> MultiLevelCache:
 def get_lru_cache() -> LRUCache:
     """获取简单LRU缓存"""
     return LRUCache[Any]()
+
+
+def get_cache() -> MultiLevelCache:
+    """获取缓存实例（兼容旧接口）"""
+    return get_cache_system()

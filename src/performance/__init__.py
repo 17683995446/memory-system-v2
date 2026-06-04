@@ -5,9 +5,15 @@
 
 import time
 import threading
-import psutil
 import os
 from typing import Dict, List, Optional, Any, Callable
+
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
+    psutil = None
 from dataclasses import dataclass, field
 from enum import Enum
 from collections import defaultdict
@@ -229,25 +235,42 @@ class PerformanceMonitor:
             snapshot_id = f"SNAPSHOT-{self._snapshot_counter:06d}"
             
             try:
-                cpu_percent = psutil.cpu_percent(interval=0.1)
-                memory = psutil.virtual_memory()
-                disk_io = psutil.disk_io_counters()
-                net_io = psutil.net_io_counters()
-                
-                snapshot = PerformanceSnapshot(
-                    snapshot_id=snapshot_id,
-                    timestamp=datetime.now(),
-                    cpu_percent=cpu_percent,
-                    memory_percent=memory.percent,
-                    memory_used_mb=memory.used / (1024 * 1024),
-                    memory_available_mb=memory.available / (1024 * 1024),
-                    disk_io_read_mb=disk_io.read_bytes / (1024 * 1024) if disk_io else 0,
-                    disk_io_write_mb=disk_io.write_bytes / (1024 * 1024) if disk_io else 0,
-                    network_sent_mb=net_io.bytes_sent / (1024 * 1024) if net_io else 0,
-                    network_recv_mb=net_io.bytes_recv / (1024 * 1024) if net_io else 0,
-                    active_connections=len(psutil.net_connections()),
-                    thread_count=threading.active_count()
-                )
+                if HAS_PSUTIL and psutil:
+                    cpu_percent = psutil.cpu_percent(interval=0.1)
+                    memory = psutil.virtual_memory()
+                    disk_io = psutil.disk_io_counters()
+                    net_io = psutil.net_io_counters()
+                    
+                    snapshot = PerformanceSnapshot(
+                        snapshot_id=snapshot_id,
+                        timestamp=datetime.now(),
+                        cpu_percent=cpu_percent,
+                        memory_percent=memory.percent,
+                        memory_used_mb=memory.used / (1024 * 1024),
+                        memory_available_mb=memory.available / (1024 * 1024),
+                        disk_io_read_mb=disk_io.read_bytes / (1024 * 1024) if disk_io else 0,
+                        disk_io_write_mb=disk_io.write_bytes / (1024 * 1024) if disk_io else 0,
+                        network_sent_mb=net_io.bytes_sent / (1024 * 1024) if net_io else 0,
+                        network_recv_mb=net_io.bytes_recv / (1024 * 1024) if net_io else 0,
+                        active_connections=len(psutil.net_connections()),
+                        thread_count=threading.active_count()
+                    )
+                else:
+                    # 当psutil不可用时，使用模拟数据
+                    snapshot = PerformanceSnapshot(
+                        snapshot_id=snapshot_id,
+                        timestamp=datetime.now(),
+                        cpu_percent=0.0,
+                        memory_percent=0.0,
+                        memory_used_mb=0.0,
+                        memory_available_mb=0.0,
+                        disk_io_read_mb=0.0,
+                        disk_io_write_mb=0.0,
+                        network_sent_mb=0.0,
+                        network_recv_mb=0.0,
+                        active_connections=0,
+                        thread_count=threading.active_count()
+                    )
             except Exception:
                 snapshot = PerformanceSnapshot(
                     snapshot_id=snapshot_id,
@@ -261,7 +284,7 @@ class PerformanceMonitor:
                     network_sent_mb=0.0,
                     network_recv_mb=0.0,
                     active_connections=0,
-                    thread_count=0
+                    thread_count=threading.active_count()
                 )
             
             self.snapshots.append(snapshot)

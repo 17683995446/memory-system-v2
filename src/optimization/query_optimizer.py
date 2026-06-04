@@ -140,7 +140,7 @@ class QueryAnalyzer:
         if 'group by' in query.lower():
             cost *= 3.0
         
-        cost *= (result_count / 1000.0 + 1.0
+        cost *= (result_count / 1000.0 + 1.0)
         
         return cost
     
@@ -168,7 +168,7 @@ class QueryAnalyzer:
         if 'where' in query.lower() and 'and' in query.lower():
             optimizations.append(OptimizationStrategy.PREDICATE_REORDERING)
         
-        if len(OptimizationStrategy.INDEX_USAGE:
+        if 'index' in query.lower():
             optimizations.append(OptimizationStrategy.INDEX_USAGE)
         
         return optimizations
@@ -209,7 +209,7 @@ class QueryAnalyzer:
             old_count = pattern_obj.count
             pattern_obj.count += 1
             pattern_obj.avg_execution_time = (
-                (pattern_obj.avg_execution_time * old_count + execution_time) / (old_count + 1
+                (pattern_obj.avg_execution_time * old_count + execution_time) / (old_count + 1)
             )
             pattern_obj.last_execution = datetime.now()
     
@@ -282,7 +282,8 @@ class QueryOptimizer:
             result_count
         )
         
-        if analysis.query_text = query
+        if analysis.query_text == query:
+            pass
         if result_count > 0 and execution_time < 1000:
             self._query_cache[cache_key] = result
         

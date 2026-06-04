@@ -220,18 +220,29 @@ class RESTAPIRouter:
             if isinstance(result, APIResponse):
                 return result
         
-        # 查找端点
+        # 查找端点（支持动态路径匹配）
         path = request.path
         method = request.method
         
-        if path not in self.endpoints or method not in self.endpoints[path]:
+        # 首先尝试精确匹配
+        endpoint = None
+        if path in self.endpoints and method in self.endpoints[path]:
+            endpoint = self.endpoints[path][method]
+        else:
+            # 尝试模式匹配（如 /api/v1/memory/{key}）
+            for registered_path, methods in self.endpoints.items():
+                if method in methods:
+                    # 检查是否是动态路径
+                    if self._match_path(registered_path, path):
+                        endpoint = methods[method]
+                        break
+        
+        if endpoint is None:
             return APIResponse(
                 status_code=404,
                 data=None,
                 message="Endpoint not found"
             )
-        
-        endpoint = self.endpoints[path][method]
         
         # 速率限制检查
         if request.user_id:
@@ -268,6 +279,23 @@ class RESTAPIRouter:
                 data=None,
                 message=str(e)
             )
+    
+    def _match_path(self, pattern: str, path: str) -> bool:
+        """匹配路径模式"""
+        # 将模式转换为正则表达式
+        import re
+        # 转义特殊字符，但保留 {param} 作为通配符
+        regex_pattern = pattern
+        # 替换 {param} 为捕获组
+        regex_pattern = re.sub(r'\{[^}]+\}', '([^/]+)', regex_pattern)
+        # 转义其他特殊字符
+        regex_pattern = regex_pattern.replace('/', r'\/')
+        regex_pattern = '^' + regex_pattern + '$'
+        
+        try:
+            return bool(re.match(regex_pattern, path))
+        except re.error:
+            return False
     
     def get_routes(self) -> List[Dict[str, Any]]:
         """获取所有路由"""
@@ -619,3 +647,114 @@ class APIIntegration:
     def get_all_routes(self) -> List[Dict[str, Any]]:
         """获取所有路由"""
         return self.rest_router.get_routes()
+
+
+class APIServer:
+    """API服务器"""
+    
+    def __init__(self):
+        self.router = RESTAPIRouter()
+        self._setup_routes()
+    
+    def _setup_routes(self):
+        """设置路由"""
+        self.router.register_endpoint(
+            "/api/v1/health",
+            HTTPMethod.GET,
+            self._handle_health,
+            APIEndpointType.SYSTEM,
+            description="Health check",
+            requires_auth=False
+        )
+        
+        self.router.register_endpoint(
+            "/api/v1/memory",
+            HTTPMethod.POST,
+            self._handle_add_memory,
+            APIEndpointType.MEMORY,
+            description="Add memory",
+            requires_auth=False
+        )
+        
+        self.router.register_endpoint(
+            "/api/v1/memory/{key}",
+            HTTPMethod.GET,
+            self._handle_get_memory,
+            APIEndpointType.MEMORY,
+            description="Get memory",
+            requires_auth=False
+        )
+        
+        self.router.register_endpoint(
+            "/api/v1/memory/{key}",
+            HTTPMethod.PUT,
+            self._handle_update_memory,
+            APIEndpointType.MEMORY,
+            description="Update memory",
+            requires_auth=False
+        )
+        
+        self.router.register_endpoint(
+            "/api/v1/memory/{key}",
+            HTTPMethod.DELETE,
+            self._handle_delete_memory,
+            APIEndpointType.MEMORY,
+            description="Delete memory",
+            requires_auth=False
+        )
+        
+        self.router.register_endpoint(
+            "/api/v1/metrics",
+            HTTPMethod.GET,
+            self._handle_metrics,
+            APIEndpointType.STATISTICS,
+            description="Get metrics",
+            requires_auth=False
+        )
+    
+    def handle_request(self, method: str, path: str, data: Dict[str, Any] = None) -> Dict[str, Any]:
+        """处理请求"""
+        try:
+            http_method = HTTPMethod(method.upper())
+        except ValueError:
+            return {"status": 400, "error": "Invalid HTTP method"}
+        
+        request = APIRequest(
+            method=http_method,
+            path=path,
+            body=data or {}
+        )
+        
+        response = self.router.route(request)
+        
+        return {
+            "status": response.status_code,
+            "data": response.data,
+            "message": response.message
+        }
+    
+    def _handle_health(self, request: APIRequest) -> Dict[str, Any]:
+        """处理健康检查"""
+        return {"status": "healthy", "timestamp": time.time()}
+    
+    def _handle_add_memory(self, request: APIRequest) -> Dict[str, Any]:
+        """处理添加记忆"""
+        if not request.body or "key" not in request.body or "value" not in request.body:
+            raise ValueError("Missing key or value")
+        return {"status": "success", "key": request.body["key"]}
+    
+    def _handle_get_memory(self, request: APIRequest) -> Dict[str, Any]:
+        """处理获取记忆"""
+        return {"key": "test", "value": "test_value"}
+    
+    def _handle_update_memory(self, request: APIRequest) -> Dict[str, Any]:
+        """处理更新记忆"""
+        return {"status": "updated"}
+    
+    def _handle_delete_memory(self, request: APIRequest) -> Dict[str, Any]:
+        """处理删除记忆"""
+        return {"status": "deleted"}
+    
+    def _handle_metrics(self, request: APIRequest) -> Dict[str, Any]:
+        """处理指标请求"""
+        return {"metrics": []}

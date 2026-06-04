@@ -64,6 +64,20 @@ class L1Memory:
                 return True
             return False
     
+    def delete_by_key(self, key: str) -> bool:
+        """根据key删除记忆"""
+        with self._lock:
+            for task_id, memories in list(self._task_memories.items()):
+                # 将deque转换为列表以便删除
+                memory_list = list(memories)
+                for i, memory in enumerate(memory_list):
+                    if memory.text == key:
+                        memory_list.pop(i)
+                        # 更新deque
+                        self._task_memories[task_id] = deque(memory_list)
+                        return True
+            return False
+    
     def clear_all(self) -> None:
         """清空所有记忆"""
         with self._lock:
@@ -101,7 +115,7 @@ class L1Memory:
                     all_items.append(item_dict)
             return all_items
     
-    def clear(self) -> None:
+    def clear_all(self) -> None:
         """清空所有记忆"""
         with self._lock:
             self._task_memories.clear()

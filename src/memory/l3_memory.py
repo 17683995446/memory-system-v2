@@ -152,6 +152,16 @@ class L3Memory:
                 conn.commit()
                 return cursor.rowcount > 0
     
+    def delete_by_key(self, key: str) -> bool:
+        """根据key删除三元组（key匹配entity或value）"""
+        with self._lock:
+            with sqlite3.connect(self.db_file) as conn:
+                cursor = conn.cursor()
+                # 尝试匹配entity或value
+                cursor.execute('DELETE FROM triples WHERE entity = ? OR value = ?', (key, key))
+                conn.commit()
+                return cursor.rowcount > 0
+    
     def size(self) -> int:
         """获取三元组总数"""
         with self._lock:
