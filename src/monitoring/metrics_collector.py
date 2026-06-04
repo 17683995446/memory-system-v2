@@ -10,6 +10,8 @@ from enum import Enum
 from collections import defaultdict
 from datetime import datetime, timedelta
 import json
+from ..utils.logger import get_logger
+
 
 
 class NotificationChannelType(Enum):
@@ -131,6 +133,7 @@ class MetricsCollector:
     """监控指标收集器"""
     
     def __init__(self):
+        self._logger = get_logger()
         self.metrics: Dict[str, Metric] = {}
         self.alert_rules: Dict[str, AlertRule] = {}
         self.alerts: Dict[str, Alert] = {}
@@ -460,7 +463,7 @@ class MetricsCollector:
     def _send_to_channel(self, channel: NotificationChannel, alert: Alert) -> None:
         """发送到指定渠道"""
         if channel.channel_type == NotificationChannelType.CONSOLE:
-            print(f"[ALERT {alert.severity}] {alert.name}: {alert.metric_name} = {alert.current_value} {alert.condition} {alert.threshold}")
+            logger.info(f"[ALERT {alert.severity}] {alert.name}: {alert.metric_name} = {alert.current_value} {alert.condition} {alert.threshold}")
         elif channel.channel_type == NotificationChannelType.EMAIL:
             pass
         elif channel.channel_type == NotificationChannelType.SLACK:

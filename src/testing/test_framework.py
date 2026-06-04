@@ -11,6 +11,8 @@ from typing import Dict, List, Callable, Any, Optional
 from dataclasses import dataclass, field
 from enum import Enum
 from collections import defaultdict
+from ..utils.logger import get_logger
+
 
 
 class TestStatus(Enum):
@@ -63,6 +65,7 @@ class TestSuite:
     """测试套件"""
     
     def __init__(self, name: str, category: TestCategory = TestCategory.UNIT):
+        self._logger = get_logger()
         self.name = name
         self.category = category
         self.tests: List[Dict] = []  # {'func': Callable, 'tags': List[str], 'timeout': float}
@@ -351,7 +354,7 @@ class TestingFramework:
         all_results = {}
         
         for name, suite in self.suites.items():
-            print(f"\n运行测试套件: {name} ({suite.category.value})")
+            logger.info(f"\n运行测试套件: {name} ({suite.category.value})")
             result = suite.run(fail_fast)
             all_results[name] = result
         
@@ -363,7 +366,7 @@ class TestingFramework:
         
         for name, suite in self.suites.items():
             if suite.category == category:
-                print(f"\n运行测试套件: {name}")
+                logger.info(f"\n运行测试套件: {name}")
                 result = suite.run(fail_fast)
                 results[name] = result
         

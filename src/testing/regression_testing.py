@@ -9,6 +9,8 @@ from typing import Dict, List, Callable, Any, Optional
 from dataclasses import dataclass, field
 from enum import Enum
 from datetime import datetime
+from ..utils.logger import get_logger
+
 
 
 class RegressionStatus(Enum):
@@ -61,6 +63,7 @@ class RegressionTestManager:
     """回归测试管理器"""
     
     def __init__(self):
+        self._logger = get_logger()
         self.suites: Dict[str, RegressionSuite] = {}
         self.tests: Dict[str, RegressionTest] = {}
         self.results: List[RegressionResult] = []
@@ -200,7 +203,7 @@ class RegressionTestManager:
         all_results = {}
         
         for suite_id in self.suites:
-            print(f"\n运行回归测试套件: {self.suites[suite_id].name}")
+            logger.info(f"\n运行回归测试套件: {self.suites[suite_id].name}")
             results = self.run_suite(suite_id)
             all_results[suite_id] = results
         

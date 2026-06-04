@@ -9,6 +9,8 @@ import time
 from typing import Dict, List, Optional, Set, Any, Union
 from enum import Enum
 from collections import defaultdict
+from ..utils.logger import get_logger
+
 
 
 class ImportanceLevel(Enum):
@@ -24,6 +26,7 @@ class ImportanceManager:
     """记忆重要性管理器"""
 
     def __init__(self, storage_path: str = "./data/importance.json"):
+        self._logger = get_logger()
         self.storage_path = storage_path
         # 记忆ID -> 重要性数据
         self._memory_importance: Dict[str, Dict[str, Any]] = {}
@@ -260,7 +263,7 @@ class ImportanceManager:
                         self._score_memories[score].add(mem_id)
 
         except Exception as e:
-            print(f"加载重要性数据失败: {e}")
+            logger.info(f"加载重要性数据失败: {e}")
 
 
 class EnhancedMemoryWithImportance:

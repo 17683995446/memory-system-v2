@@ -10,6 +10,8 @@ import uuid
 from typing import Dict, List, Optional, Any, Set, Tuple
 from collections import defaultdict
 from enum import Enum
+from ..utils.logger import get_logger
+
 
 
 class PermissionLevel(Enum):
@@ -200,6 +202,7 @@ class PermissionManager:
     """权限管理器"""
 
     def __init__(self):
+        self._logger = get_logger()
         # 记忆ID -> (用户ID -> 权限级别)
         self.permissions: Dict[str, Dict[str, PermissionLevel]] = defaultdict(dict)
 
@@ -697,7 +700,7 @@ class MemoryCollaboration:
                     ]
 
         except Exception as e:
-            print(f"加载协作数据失败: {e}")
+            logger.info(f"加载协作数据失败: {e}")
 
 
 class EnhancedMemoryWithCollaboration:

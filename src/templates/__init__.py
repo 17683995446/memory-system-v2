@@ -9,6 +9,8 @@ import time
 import uuid
 from typing import Dict, List, Optional, Any, Set
 from collections import defaultdict
+from ..utils.logger import get_logger
+
 
 
 class MemoryTemplate:
@@ -110,6 +112,7 @@ class MemoryTemplateManager:
     """记忆模板管理器"""
 
     def __init__(self, storage_path: str = "./data/templates.json"):
+        self._logger = get_logger()
         self.storage_path = storage_path
         self.templates: Dict[str, MemoryTemplate] = {}
 
@@ -304,7 +307,7 @@ class MemoryTemplateManager:
                     self.templates[tid] = MemoryTemplate.from_dict(template_data)
 
         except Exception as e:
-            print(f"加载模板数据失败: {e}")
+            logger.info(f"加载模板数据失败: {e}")
 
 
 class EnhancedMemoryWithTemplates:

@@ -9,6 +9,8 @@ import time
 import hashlib
 from typing import Dict, List, Optional, Any
 from collections import defaultdict
+from ..utils.logger import get_logger
+
 
 
 class MemoryVersion:
@@ -63,6 +65,7 @@ class MemoryVersionControl:
     """记忆版本控制器"""
 
     def __init__(self, storage_path: str = "./data/versions.json"):
+        self._logger = get_logger()
         self.storage_path = storage_path
         # 记忆ID -> 版本列表
         self.versions: Dict[str, List[MemoryVersion]] = defaultdict(list)
@@ -285,7 +288,7 @@ class MemoryVersionControl:
                 self.current_version = data["current_version"]
 
         except Exception as e:
-            print(f"加载版本数据失败: {e}")
+            logger.info(f"加载版本数据失败: {e}")
 
 
 class EnhancedMemoryWithVersionControl:

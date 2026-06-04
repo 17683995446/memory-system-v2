@@ -14,6 +14,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from collections import defaultdict
 from pathlib import Path
+from ..utils.logger import get_logger
+
 
 
 class PluginType(Enum):
@@ -71,6 +73,7 @@ class BasePlugin:
     """插件基类 - 所有自定义插件必须继承此类"""
     
     def __init__(self, config: Dict[str, Any]):
+        self._logger = get_logger()
         self.config = config
         self.is_initialized = False
     
@@ -154,7 +157,7 @@ class PluginManager:
                             self.plugin_info[plugin_id].config.update(plugin_config)
                             self.plugin_info[plugin_id].enabled = plugin_config.get("enabled", True)
             except Exception as e:
-                print(f"Failed to load plugin config: {e}")
+                logger.info(f"Failed to load plugin config: {e}")
     
     def _save_config(self) -> None:
         """保存插件配置"""
@@ -268,12 +271,12 @@ class PluginManager:
                 plugin.initialize()
                 self._register_hooks(plugin, info)
             
-            print(f"Loaded plugin: {plugin_id} v{info.version}")
+            logger.info(f"Loaded plugin: {plugin_id} v{info.version}")
             return info
             
         except Exception as e:
             error_msg = f"Failed to load plugin {plugin_id}: {e}\n{traceback.format_exc()}"
-            print(error_msg)
+            logger.info(str(error_msg))
             
             if plugin_id in self.plugin_info:
                 self.plugin_info[plugin_id].status = PluginStatus.ERROR
@@ -322,11 +325,11 @@ class PluginManager:
             if plugin_id in sys.modules:
                 del sys.modules[plugin_id]
             
-            print(f"Unloaded plugin: {plugin_id}")
+            logger.info(f"Unloaded plugin: {plugin_id}")
             return True
             
         except Exception as e:
-            print(f"Failed to unload plugin {plugin_id}: {e}")
+            logger.info(f"Failed to unload plugin {plugin_id}: {e}")
             return False
     
     def reload_plugin(self, plugin_id: str) -> Optional[PluginInfo]:
@@ -398,7 +401,7 @@ class PluginManager:
                 result = handler(*args, **kwargs)
                 results.append(result)
             except Exception as e:
-                print(f"Error executing hook {hook_name}: {e}")
+                logger.info(f"Error executing hook {hook_name}: {e}")
         return results
     
     def update_plugin_config(self, plugin_id: str, config: Dict[str, Any]) -> bool:
@@ -461,7 +464,7 @@ class PluginSandbox:
         try:
             return plugin.execute(context)
         except Exception as e:
-            print(f"Plugin execution error: {e}")
+            logger.info(f"Plugin execution error: {e}")
             return None
     
     def validate_plugin(self, plugin: BasePlugin) -> bool:

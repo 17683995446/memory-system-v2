@@ -8,6 +8,8 @@ import json
 import time
 from typing import Dict, List, Optional, Set, Any
 from collections import defaultdict
+from ..utils.logger import get_logger
+
 
 
 class MemoryRelation:
@@ -49,6 +51,7 @@ class MemoryRelationNetwork:
     """记忆关系网络类"""
 
     def __init__(self, storage_path: str = "./data/relations.json"):
+        self._logger = get_logger()
         self.storage_path = storage_path
         self.relations: List[MemoryRelation] = []
         # 索引：源记忆 -> 关系列表
@@ -251,7 +254,7 @@ class MemoryRelationNetwork:
                     self.type_index[relation.relation_type].append(relation)
 
         except Exception as e:
-            print(f"加载关系数据失败: {e}")
+            logger.info(f"加载关系数据失败: {e}")
 
 
 class EnhancedMemoryWithRelations:

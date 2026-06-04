@@ -32,9 +32,9 @@ class ComprehensiveTester:
     
     def run_all_tests(self):
         """运行所有测试"""
-        print("=" * 80)
-        print("开始全面测试")
-        print("=" * 80)
+        logger.info(str("=" * 80))
+        logger.info("开始全面测试")
+        logger.info(str("=" * 80))
         
         # 1. 静态代码核验
         self.test_static_analysis()
@@ -70,7 +70,7 @@ class ComprehensiveTester:
     
     def test_static_analysis(self):
         """静态代码分析"""
-        print("\n[1/10] 静态代码核验...")
+        logger.info("\n[1/10] 静态代码核验...")
         
         issues = []
         
@@ -93,17 +93,17 @@ class ComprehensiveTester:
                         issues.append(f"{filepath}: 发现未完成的TODO/FIXME")
         
         if issues:
-            print(f"  ⚠️ 发现 {len(issues)} 个潜在问题:")
+            logger.info(f"  ⚠️ 发现 {len(issues)} 个潜在问题:")
             for issue in issues[:10]:
-                print(f"    - {issue}")
+                logger.info(f"    - {issue}")
         else:
-            print("  ✅ 静态分析通过")
+            logger.info("  ✅ 静态分析通过")
         
         self.test_results.append(("静态分析", len(issues) == 0, issues))
     
     def test_unit_tests(self):
         """单元测试"""
-        print("\n[2/10] 单元全覆盖测试...")
+        logger.info("\n[2/10] 单元全覆盖测试...")
         
         modules_to_test = [
             'src.memory',
@@ -149,18 +149,18 @@ class ComprehensiveTester:
                         assert instance is not None
                 
                 passed += 1
-                print(f"  ✅ {module_name}")
+                logger.info(f"  ✅ {module_name}")
             except Exception as e:
                 failed += 1
-                print(f"  ❌ {module_name}: {str(e)}")
+                logger.info(f"  ❌ {module_name}: {str(e)}")
                 self.errors.append((module_name, str(e)))
         
-        print(f"\n  结果: {passed} 通过, {failed} 失败")
+        logger.info(f"\n  结果: {passed} 通过, {failed} 失败")
         self.test_results.append(("单元测试", failed == 0, f"{passed}/{passed+failed}"))
     
     def test_integration(self):
         """集成测试"""
-        print("\n[3/10] 模块集成联调...")
+        logger.info("\n[3/10] 模块集成联调...")
         
         try:
             # 测试跨模块调用
@@ -182,15 +182,15 @@ class ComprehensiveTester:
             collector.create_metric("integration_test", "gauge")
             collector.record_metric("integration_test", 1.0)
             
-            print("  ✅ 跨模块集成测试通过")
+            logger.info("  ✅ 跨模块集成测试通过")
             self.test_results.append(("集成测试", True, "通过"))
         except Exception as e:
-            print(f"  ❌ 集成测试失败: {str(e)}")
+            logger.info(f"  ❌ 集成测试失败: {str(e)}")
             self.test_results.append(("集成测试", False, str(e)))
     
     def test_interfaces(self):
         """接口测试"""
-        print("\n[4/10] 接口全量遍历...")
+        logger.info("\n[4/10] 接口全量遍历...")
         
         from src.api import APIServer
         
@@ -218,20 +218,20 @@ class ComprehensiveTester:
                 
                 if result.get("status") == expected:
                     passed += 1
-                    print(f"  ✅ {method} {path}")
+                    logger.info(f"  ✅ {method} {path}")
                 else:
                     failed += 1
-                    print(f"  ❌ {method} {path}: 期望 {expected}, 实际 {result.get('status')}")
+                    logger.info(f"  ❌ {method} {path}: 期望 {expected}, 实际 {result.get('status')}")
             except Exception as e:
                 failed += 1
-                print(f"  ❌ {method} {path}: {str(e)}")
+                logger.info(f"  ❌ {method} {path}: {str(e)}")
         
-        print(f"\n  结果: {passed} 通过, {failed} 失败")
+        logger.info(f"\n  结果: {passed} 通过, {failed} 失败")
         self.test_results.append(("接口测试", failed == 0, f"{passed}/{passed+failed}"))
     
     def test_business_scenarios(self):
         """业务场景测试"""
-        print("\n[5/10] 业务场景闭环测试...")
+        logger.info("\n[5/10] 业务场景闭环测试...")
         
         scenarios = [
             self._scenario_memory_lifecycle,
@@ -247,12 +247,12 @@ class ComprehensiveTester:
             try:
                 scenario()
                 passed += 1
-                print(f"  ✅ {scenario.__name__}")
+                logger.info(f"  ✅ {scenario.__name__}")
             except Exception as e:
                 failed += 1
-                print(f"  ❌ {scenario.__name__}: {str(e)}")
+                logger.info(f"  ❌ {scenario.__name__}: {str(e)}")
         
-        print(f"\n  结果: {passed} 通过, {failed} 失败")
+        logger.info(f"\n  结果: {passed} 通过, {failed} 失败")
         self.test_results.append(("业务场景", failed == 0, f"{passed}/{passed+failed}"))
     
     def _scenario_memory_lifecycle(self):
@@ -299,7 +299,7 @@ class ComprehensiveTester:
         # 注意：这个测试可能会失败，因为缓存操作不是原子的
         # 这是为了发现问题
         final = cache.get("counter", 0)
-        print(f"    并发计数器最终值: {final} (期望: 1000)")
+        logger.info(f"    并发计数器最终值: {final} (期望: 1000)")
     
     def _scenario_error_recovery(self):
         """错误恢复场景"""
@@ -340,7 +340,7 @@ class ComprehensiveTester:
     
     def test_data_consistency(self):
         """数据一致性测试"""
-        print("\n[6/10] 数据一致性校验...")
+        logger.info("\n[6/10] 数据一致性校验...")
         
         from src.memory import MemorySystem
         from src.cache import get_cache
@@ -357,16 +357,16 @@ class ComprehensiveTester:
         cache_val = cache.get("sync_test")
         
         # 注意：这里可能不一致，这是为了发现问题
-        print(f"  内存值: {mem_val}")
-        print(f"  缓存值: {cache_val}")
+        logger.info(f"  内存值: {mem_val}")
+        logger.info(f"  缓存值: {cache_val}")
         
         # 内存和缓存是不同系统，不需要完全一致
-        print("  ✅ 数据一致性测试通过（内存和缓存是不同系统）")
+        logger.info("  ✅ 数据一致性测试通过（内存和缓存是不同系统）")
         self.test_results.append(("数据一致性", True, "通过"))
     
     def test_error_handling(self):
         """异常容错测试"""
-        print("\n[7/10] 异常容错测试...")
+        logger.info("\n[7/10] 异常容错测试...")
         
         from src.memory import MemorySystem
         from src.rate_limiter import get_rate_limiter
@@ -377,21 +377,21 @@ class ComprehensiveTester:
         # 测试空值处理
         try:
             result = memory.recall(None)
-            print(f"  ⚠️ 空值查询返回: {result}")
+            logger.info(f"  ⚠️ 空值查询返回: {result}")
         except Exception as e:
-            print(f"  ✅ 空值查询正确处理: {type(e).__name__}")
+            logger.info(f"  ✅ 空值查询正确处理: {type(e).__name__}")
         
         # 测试超限
         limiter.create_limiter("test", max_requests=5, window_seconds=60)
         for i in range(10):
             allowed = limiter.check_limit("test", "client1")
-            print(f"  请求 {i+1}: {'通过' if allowed else '拒绝'}")
+            logger.info(f"  请求 {i+1}: {'通过' if allowed else '拒绝'}")
         
         self.test_results.append(("异常容错", True, "通过"))
     
     def test_performance(self):
         """性能测试"""
-        print("\n[8/10] 基础性能核验...")
+        logger.info("\n[8/10] 基础性能核验...")
         
         from src.memory import MemorySystem
         
@@ -409,8 +409,8 @@ class ComprehensiveTester:
             memory.recall(f"perf:{i}", "perf_task")
         read_time = time.time() - start
         
-        print(f"  写入 10000 条: {write_time:.2f}s ({10000/write_time:.0f} ops/s)")
-        print(f"  读取 10000 条: {read_time:.2f}s ({10000/read_time:.0f} ops/s)")
+        logger.info(f"  写入 10000 条: {write_time:.2f}s ({10000/write_time:.0f} ops/s)")
+        logger.info(f"  读取 10000 条: {read_time:.2f}s ({10000/read_time:.0f} ops/s)")
         
         # 检查性能是否达标
         is_acceptable = write_time < 10 and read_time < 10
@@ -420,7 +420,7 @@ class ComprehensiveTester:
     
     def test_concurrency(self):
         """并发测试"""
-        print("\n[9/10] 并发压力测试...")
+        logger.info("\n[9/10] 并发压力测试...")
         
         from src.memory import MemorySystem
         
@@ -446,20 +446,20 @@ class ComprehensiveTester:
             t.join()
         duration = time.time() - start
         
-        print(f"  20个线程, 各100次操作, 耗时: {duration:.2f}s")
+        logger.info(f"  20个线程, 各100次操作, 耗时: {duration:.2f}s")
         if errors:
-            print(f"  ❌ 发现 {len(errors)} 个错误")
+            logger.info(f"  ❌ 发现 {len(errors)} 个错误")
             for worker_id, error in errors[:5]:
-                print(f"    Worker {worker_id}: {error}")
+                logger.info(f"    Worker {worker_id}: {error}")
         else:
-            print("  ✅ 并发测试通过")
+            logger.info("  ✅ 并发测试通过")
         
         self.test_results.append(("并发测试", len(errors) == 0, 
                                  f"错误数: {len(errors)}"))
     
     def test_boundary_conditions(self):
         """边界条件测试"""
-        print("\n[10/10] 边界条件测试...")
+        logger.info("\n[10/10] 边界条件测试...")
         
         from src.memory import MemorySystem
         
@@ -487,43 +487,43 @@ class ComprehensiveTester:
                 # 验证 - 只要成功添加和读取就认为是成功的
                 if result is not None and len(result.get("l1", [])) > 0:
                     passed += 1
-                    print(f"  ✅ {name}")
+                    logger.info(f"  ✅ {name}")
                 else:
                     failed += 1
-                    print(f"  ⚠️ {name}: 结果为空")
+                    logger.info(f"  ⚠️ {name}: 结果为空")
             except Exception as e:
                 failed += 1
-                print(f"  ❌ {name}: {str(e)}")
+                logger.info(f"  ❌ {name}: {str(e)}")
         
-        print(f"\n  结果: {passed} 通过, {failed} 失败")
+        logger.info(f"\n  结果: {passed} 通过, {failed} 失败")
         self.test_results.append(("边界测试", failed == 0, f"{passed}/{passed+failed}"))
     
     def print_results(self):
         """打印测试结果"""
-        print("\n" + "=" * 80)
-        print("测试总结报告")
-        print("=" * 80)
+        logger.info(str("\n" + "=" * 80))
+        logger.info("测试总结报告")
+        logger.info(str("=" * 80))
         
         total_passed = 0
         total_failed = 0
         
         for name, passed, details in self.test_results:
             status = "✅ 通过" if passed else "❌ 失败"
-            print(f"{status} {name}: {details}")
+            logger.info(f"{status} {name}: {details}")
             
             if passed:
                 total_passed += 1
             else:
                 total_failed += 1
         
-        print("\n" + "=" * 80)
-        print(f"总计: {total_passed} 通过, {total_failed} 失败")
-        print("=" * 80)
+        logger.info(str("\n" + "=" * 80))
+        logger.info(f"总计: {total_passed} 通过, {total_failed} 失败")
+        logger.info(str("=" * 80))
         
         if self.errors:
-            print("\n发现的错误:")
+            logger.info("\n发现的错误:")
             for location, error in self.errors:
-                print(f"  - {location}: {error}")
+                logger.info(f"  - {location}: {error}")
 
 
 if __name__ == "__main__":

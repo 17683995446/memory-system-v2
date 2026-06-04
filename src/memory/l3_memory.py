@@ -187,3 +187,12 @@ class L3Memory:
                 cursor = conn.cursor()
                 cursor.execute('DELETE FROM triples')
                 conn.commit()
+
+    def vacuum(self) -> None:
+        """优化数据库（VACUUM）"""
+        with self._lock:
+            try:
+                with sqlite3.connect(self.db_file) as conn:
+                    conn.execute('VACUUM')
+            except Exception:
+                pass  # VACUUM失败不影响主功能

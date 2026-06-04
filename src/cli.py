@@ -15,12 +15,15 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from src.memory import get_memory_system
 from src.qa import MemoryQASystem
 from src.export import MemoryExporter, MemorySharer
+from .utils.logger import get_logger
+
 
 
 class MemoryCLI:
     """记忆系统CLI"""
 
     def __init__(self):
+        self._logger = get_logger()
         self.memory_system = get_memory_system()
         self.qa_system = MemoryQASystem()
         self.exporter = MemoryExporter()
@@ -85,7 +88,7 @@ class MemoryCLI:
         content = args.content
 
         if not content:
-            print("错误: 记忆内容不能为空")
+            logger.info("错误: 记忆内容不能为空")
             return 1
 
         level = args.level or self.config["default_level"]
@@ -104,11 +107,11 @@ class MemoryCLI:
         }
         self.current_memories.append(memory_item)
 
-        print(f"✓ 记忆添加成功")
-        print(f"  ID: {mem_id}")
-        print(f"  层级: {level}")
-        print(f"  来源: {source}")
-        print(f"  内容: {content[:50]}{'...' if len(content) > 50 else ''}")
+        logger.info(f"✓ 记忆添加成功")
+        logger.info(f"  ID: {mem_id}")
+        logger.info(f"  层级: {level}")
+        logger.info(f"  来源: {source}")
+        logger.info(f"  内容: {content[:50]}{'...' if len(content) > 50 else ''}")
 
         return 0
 
@@ -127,82 +130,82 @@ class MemoryCLI:
         memories = memories[-limit:]
 
         if not memories:
-            print("没有找到记忆")
+            logger.info("没有找到记忆")
             return 0
 
-        print(f"共 {len(memories)} 条记忆:")
-        print("=" * 70)
+        logger.info(f"共 {len(memories)} 条记忆:")
+        logger.info(str("=" * 70))
 
         for i, mem in enumerate(memories, 1):
-            print(f"\n{i}. [{mem.get('level', 'unknown')}] {mem.get('id', 'N/A')}")
-            print(f"   内容: {mem.get('text', '')[:60]}{'...' if len(mem.get('text', '')) > 60 else ''}")
-            print(f"   来源: {mem.get('source', 'unknown')}")
+            logger.info(f"\n{i}. [{mem.get('level', 'unknown')}] {mem.get('id', 'N/A')}")
+            logger.info(f"   内容: {mem.get('text', '')[:60]}{'...' if len(mem.get('text', '')) > 60 else ''}")
+            logger.info(f"   来源: {mem.get('source', 'unknown')}")
             if 'timestamp' in mem:
                 time_str = time.strftime("%Y-%m-%d %H:%M", time.localtime(mem['timestamp']))
-                print(f"   时间: {time_str}")
+                logger.info(f"   时间: {time_str}")
 
         return 0
 
     def cmd_get(self, args):
         """获取单个记忆"""
         if not args.id:
-            print("错误: 需要指定记忆ID")
+            logger.info("错误: 需要指定记忆ID")
             return 1
 
         memory = next((m for m in self.current_memories if m['id'] == args.id), None)
 
         if not memory:
-            print(f"未找到记忆: {args.id}")
+            logger.info(f"未找到记忆: {args.id}")
             return 1
 
-        print("记忆详情:")
-        print("=" * 70)
-        print(self._format_output(memory))
+        logger.info("记忆详情:")
+        logger.info(str("=" * 70))
+        logger.info(str(self._format_output(memory)))
 
         return 0
 
     def cmd_delete(self, args):
         """删除记忆"""
         if not args.id:
-            print("错误: 需要指定记忆ID")
+            logger.info("错误: 需要指定记忆ID")
             return 1
 
         initial_count = len(self.current_memories)
         self.current_memories = [m for m in self.current_memories if m['id'] != args.id]
 
         if len(self.current_memories) < initial_count:
-            print(f"✓ 记忆已删除: {args.id}")
+            logger.info(f"✓ 记忆已删除: {args.id}")
             return 0
         else:
-            print(f"未找到记忆: {args.id}")
+            logger.info(f"未找到记忆: {args.id}")
             return 1
 
     def cmd_search(self, args):
         """搜索记忆"""
         if not args.query:
-            print("错误: 需要指定搜索关键词")
+            logger.info("错误: 需要指定搜索关键词")
             return 1
 
         query = args.query.lower()
         results = [m for m in self.current_memories if query in m.get('text', '').lower()]
 
         if not results:
-            print(f"未找到包含 '{args.query}' 的记忆")
+            logger.info(f"未找到包含 '{args.query}' 的记忆")
             return 0
 
-        print(f"找到 {len(results)} 条相关记忆:")
-        print("=" * 70)
+        logger.info(f"找到 {len(results)} 条相关记忆:")
+        logger.info(str("=" * 70))
 
         for i, mem in enumerate(results, 1):
-            print(f"\n{i}. [{mem.get('level', 'unknown')}] {mem.get('id', 'N/A')}")
-            print(f"   内容: {mem.get('text', '')[:80]}{'...' if len(mem.get('text', '')) > 80 else ''}")
+            logger.info(f"\n{i}. [{mem.get('level', 'unknown')}] {mem.get('id', 'N/A')}")
+            logger.info(f"   内容: {mem.get('text', '')[:80]}{'...' if len(mem.get('text', '')) > 80 else ''}")
 
         return 0
 
     def cmd_ask(self, args):
         """提问问题"""
         if not args.question:
-            print("错误: 需要指定问题")
+            logger.info("错误: 需要指定问题")
             return 1
 
         question = args.question
@@ -216,19 +219,19 @@ class MemoryCLI:
 
         self.conversation_id = result['conversation_id']
 
-        print(f"\n问题: {question}")
-        print("=" * 70)
-        print(f"回答: {result['answer']['answer']}")
-        print("=" * 70)
-        print(f"答案质量: {result['answer']['quality'].value}")
-        print(f"置信度: {result['answer']['confidence']:.2f}")
-        print(f"检索到: {len(result['retrieved_memories'])} 条相关记忆")
-        print(f"对话ID: {self.conversation_id}")
+        logger.info(f"\n问题: {question}")
+        logger.info(str("=" * 70))
+        logger.info(f"回答: {result['answer']['answer']}")
+        logger.info(str("=" * 70))
+        logger.info(f"答案质量: {result['answer']['quality'].value}")
+        logger.info(f"置信度: {result['answer']['confidence']:.2f}")
+        logger.info(f"检索到: {len(result['retrieved_memories'])} 条相关记忆")
+        logger.info(f"对话ID: {self.conversation_id}")
 
         if args.show_sources and result['retrieved_memories']:
-            print("\n相关记忆:")
+            logger.info("\n相关记忆:")
             for i, item in enumerate(result['retrieved_memories'], 1):
-                print(f"  {i}. {item['memory']['text'][:60]}...")
+                logger.info(f"  {i}. {item['memory']['text'][:60]}...")
 
         return 0
 
@@ -247,21 +250,21 @@ class MemoryCLI:
             elif format_type == "csv":
                 content = self.exporter.export_to_csv(self.current_memories)
             else:
-                print(f"不支持的格式: {format_type}")
+                logger.info(f"不支持的格式: {format_type}")
                 return 1
 
             if args.output:
                 with open(args.output, 'w', encoding='utf-8') as f:
                     f.write(content)
-                print(f"✓ 导出成功: {args.output}")
-                print(f"  格式: {format_type}")
-                print(f"  记忆数: {len(self.current_memories)}")
+                logger.info(f"✓ 导出成功: {args.output}")
+                logger.info(f"  格式: {format_type}")
+                logger.info(f"  记忆数: {len(self.current_memories)}")
             else:
-                print(content)
+                logger.info(str(content))
 
             return 0
         except Exception as e:
-            print(f"导出失败: {e}")
+            logger.info(f"导出失败: {e}")
             return 1
 
     def cmd_share(self, args):
@@ -277,7 +280,7 @@ class MemoryCLI:
             memories_to_share = self.current_memories
 
         if not memories_to_share:
-            print("错误: 没有可分享的记忆")
+            logger.info("错误: 没有可分享的记忆")
             return 1
 
         try:
@@ -288,15 +291,15 @@ class MemoryCLI:
                 expires_at=time.time() + (expires_hours * 3600)
             )
 
-            print("✓ 分享创建成功")
-            print(f"  分享ID: {share_id}")
-            print(f"  记忆数: {len(memories_to_share)}")
-            print(f"  类型: {share_type}")
-            print(f"  过期时间: {expires_hours}小时后")
+            logger.info("✓ 分享创建成功")
+            logger.info(f"  分享ID: {share_id}")
+            logger.info(f"  记忆数: {len(memories_to_share)}")
+            logger.info(f"  类型: {share_type}")
+            logger.info(f"  过期时间: {expires_hours}小时后")
 
             return 0
         except Exception as e:
-            print(f"创建分享失败: {e}")
+            logger.info(f"创建分享失败: {e}")
             return 1
 
     def cmd_stats(self, args):
@@ -315,9 +318,9 @@ class MemoryCLI:
         except Exception:
             pass
 
-        print("统计信息:")
-        print("=" * 70)
-        print(self._format_output(stats))
+        logger.info("统计信息:")
+        logger.info(str("=" * 70))
+        logger.info(str(self._format_output(stats)))
 
         return 0
 
@@ -336,36 +339,36 @@ class MemoryCLI:
 
             self.config[key] = value
             self._save_config()
-            print(f"✓ 配置已更新: {key} = {value}")
+            logger.info(f"✓ 配置已更新: {key} = {value}")
             return 0
 
         elif args.get:
             key = args.get
             if key in self.config:
-                print(f"{key} = {self.config[key]}")
+                logger.info(f"{key} = {self.config[key]}")
             else:
-                print(f"未找到配置项: {key}")
+                logger.info(f"未找到配置项: {key}")
             return 0
 
         elif args.list_all:
-            print("当前配置:")
-            print("=" * 70)
-            print(self._format_output(self.config))
+            logger.info("当前配置:")
+            logger.info(str("=" * 70))
+            logger.info(str(self._format_output(self.config)))
             return 0
 
         else:
-            print("配置项:")
-            print("=" * 70)
-            print(self._format_output(self.config))
+            logger.info("配置项:")
+            logger.info(str("=" * 70))
+            logger.info(str(self._format_output(self.config)))
             return 0
 
     def cmd_interactive(self, args):
         """交互式模式"""
-        print("\n" + "=" * 70)
-        print("记忆系统 CLI - 交互式模式")
-        print("=" * 70)
-        print("输入命令进行操作，输入 'help' 查看帮助，输入 'exit' 退出")
-        print()
+        logger.info(str("\n" + "=" * 70))
+        logger.info("记忆系统 CLI - 交互式模式")
+        logger.info(str("=" * 70))
+        logger.info("输入命令进行操作，输入 'help' 查看帮助，输入 'exit' 退出")
+        logger.info(str())
 
         while True:
             try:
@@ -375,7 +378,7 @@ class MemoryCLI:
                     continue
 
                 if user_input.lower() in ['exit', 'quit', 'q']:
-                    print("再见!")
+                    logger.info("再见!")
                     break
 
                 if user_input.lower() in ['help', 'h', '?']:
@@ -395,7 +398,7 @@ class MemoryCLI:
                 if command == 'add' or command == 'a':
                     content = arg_str
                     if not content:
-                        print("请提供记忆内容")
+                        logger.info("请提供记忆内容")
                     else:
                         args = argparse.Namespace(content=content, level=None, source=None)
                         self.cmd_add(args)
@@ -420,14 +423,14 @@ class MemoryCLI:
                     self.cmd_export(args)
 
                 else:
-                    print(f"未知命令: {command}")
-                    print("输入 'help' 查看帮助")
+                    logger.info(f"未知命令: {command}")
+                    logger.info("输入 'help' 查看帮助")
 
             except KeyboardInterrupt:
-                print("\n再见!")
+                logger.info("\n再见!")
                 break
             except Exception as e:
-                print(f"错误: {e}")
+                logger.info(f"错误: {e}")
 
         return 0
 
@@ -453,7 +456,7 @@ class MemoryCLI:
   s <关键词>          = search <关键词>
   q <问题>            = ask <问题>
         """
-        print(help_text)
+        logger.info(str(help_text))
 
 
 def main():

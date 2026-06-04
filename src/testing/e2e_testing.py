@@ -8,6 +8,8 @@ from typing import Dict, List, Callable, Any, Optional
 from dataclasses import dataclass, field
 from enum import Enum
 import traceback
+from ..utils.logger import get_logger
+
 
 
 class ScenarioStatus(Enum):
@@ -59,6 +61,7 @@ class EndToEndScenario:
     """端到端测试场景"""
     
     def __init__(self, name: str, description: str = ""):
+        self._logger = get_logger()
         self.name = name
         self.description = description
         self.steps: List[TestStep] = []
@@ -272,7 +275,7 @@ class EndToEndTestFramework:
         results = {}
         
         for name, scenario in self.scenarios.items():
-            print(f"\n运行端到端场景: {name}")
+            logger.info(f"\n运行端到端场景: {name}")
             result = scenario.run()
             results[name] = result
             self.results[name] = result

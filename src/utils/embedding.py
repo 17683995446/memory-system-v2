@@ -4,6 +4,8 @@ Embedding模块 - 文本向量化
 """
 import hashlib
 from typing import List, Optional, Any
+from ..utils.logger import get_logger
+
 
 # 可选依赖
 try:
@@ -17,6 +19,7 @@ class EmbeddingModel:
     """轻量级Embedding模型"""
     
     def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
+        self._logger = get_logger()
         self.model_name = model_name
         self._model = None
         self._dimension = 384  # all-MiniLM-L6-v2输出维度
@@ -29,7 +32,7 @@ class EmbeddingModel:
                 self._model = SentenceTransformer(self.model_name)
             except ImportError:
                 # 如果没有sentence_transformers，使用模拟Embedding
-                print("Warning: sentence_transformers not found, using mock embedding")
+                logger.info("Warning: sentence_transformers not found, using mock embedding")
                 self._model = None
     
     def encode(self, text: str) -> Any:

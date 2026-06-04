@@ -11,6 +11,8 @@ import threading
 from typing import Dict, List, Optional, Any, Callable
 from collections import defaultdict
 from enum import Enum
+from ..utils.logger import get_logger
+
 
 
 class ReminderStatus(Enum):
@@ -100,6 +102,7 @@ class ReminderScheduler:
     """提醒调度器"""
 
     def __init__(self):
+        self._logger = get_logger()
         self.reminders: Dict[str, Reminder] = {}
         self.callbacks: List[Callable] = []
         self.running = False
@@ -162,7 +165,7 @@ class ReminderScheduler:
             try:
                 callback(reminder)
             except Exception as e:
-                print(f"提醒回调执行失败: {e}")
+                logger.info(f"提醒回调执行失败: {e}")
                 reminder.status = ReminderStatus.FAILED.value
                 return False
 

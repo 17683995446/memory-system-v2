@@ -8,6 +8,8 @@ import time
 from typing import Dict, List, Optional, Any
 from threading import Lock
 from dataclasses import dataclass, asdict
+from ..utils.logger import get_logger
+
 
 
 @dataclass
@@ -26,6 +28,7 @@ class VersionManager:
     """记忆版本管理器"""
     
     def __init__(self, version_dir: str = "./data/versions"):
+        self._logger = get_logger()
         self.version_dir = version_dir
         self._lock = Lock()
         self._versions: Dict[str, List[MemoryVersion]] = {}  # item_id -> versions
@@ -136,7 +139,7 @@ class VersionManager:
                     MemoryVersion(**v) for v in versions_data
                 ]
             except Exception as e:
-                print(f"Load version error: {e}")
+                logger.info(f"Load version error: {e}")
 
 
 class MemoryCorrection:

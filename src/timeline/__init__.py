@@ -9,6 +9,8 @@ import time
 from typing import Dict, List, Optional, Any, Union
 from enum import Enum
 from collections import defaultdict
+from ..utils.logger import get_logger
+
 
 
 class MemoryEventType(Enum):
@@ -63,6 +65,7 @@ class MemoryTimeline:
     """记忆时间线管理器"""
 
     def __init__(self, storage_path: str = "./data/timeline.json"):
+        self._logger = get_logger()
         self.storage_path = storage_path
         self.events: List[MemoryEvent] = []
         # 索引
@@ -247,7 +250,7 @@ class MemoryTimeline:
                     self.type_events[event.event_type].append(event)
 
         except Exception as e:
-            print(f"加载时间线数据失败: {e}")
+            logger.info(f"加载时间线数据失败: {e}")
 
 
 class EnhancedMemoryWithTimeline:

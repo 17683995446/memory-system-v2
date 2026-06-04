@@ -8,12 +8,15 @@ import json
 import time
 from typing import Dict, List, Optional, Set, Any
 from collections import defaultdict
+from ..utils.logger import get_logger
+
 
 
 class TagManager:
     """标签管理器"""
 
     def __init__(self, storage_path: str = "./data/tags.json"):
+        self._logger = get_logger()
         self.storage_path = storage_path
         self._memory_tags: Dict[str, Set[str]] = defaultdict(set)  # memory_id -> tags
         self._tag_memories: Dict[str, Set[str]] = defaultdict(set)  # tag -> memory_ids
@@ -183,7 +186,7 @@ class TagManager:
             if "tag_metadata" in data:
                 self._tag_metadata = data["tag_metadata"]
         except Exception as e:
-            print(f"加载标签数据失败: {e}")
+            logger.info(f"加载标签数据失败: {e}")
 
 
 class EnhancedMemorySystem:
