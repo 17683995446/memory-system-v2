@@ -23,6 +23,7 @@ from src.memory import get_memory_system
 from src.qa import MemoryQASystem
 from src.export import MemoryExporter, MemorySharer, EnhancedMemoryWithExport
 from src.security import EncryptionManager, AccessControlManager, EnhancedMemoryWithSecurity
+from src.security.input_validator import InputValidator, ValidationError, SecurityHeaders
 from src.utils.logger import get_logger
 
 logger = get_logger()
@@ -213,9 +214,12 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
         return self.client_address[0] if self.client_address else 'unknown'
 
     def _send_response(self, response: APIResponse, status_code: int = 200):
-        """发送API响应"""
+        """发送API响应（带安全头）"""
         self.send_response(status_code)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
+        # 添加安全响应头
+        for header, value in SecurityHeaders.get_headers().items():
+            self.send_header(header, value)
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Request-ID')
@@ -253,14 +257,22 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def _read_json_body(self) -> Optional[Dict]:
-        """读取JSON请求体"""
+        """读取JSON请求体（带安全验证）"""
         try:
             content_length = int(self.headers.get('Content-Length', 0))
             if content_length > 0:
                 if content_length > RequestValidator.MAX_CONTENT_LENGTH:
                     return {'__error': f'请求体超过最大限制 {RequestValidator.MAX_CONTENT_LENGTH} 字节'}
                 body = self.rfile.read(content_length)
-                return json.loads(body.decode('utf-8'))
+                data = json.loads(body.decode('utf-8'))
+                # 安全验证所有输入
+                try:
+                    validated = InputValidator.validate_api_request(data)
+                    # 合并验证后的数据（保留未验证字段但不使用）
+                    data.update(validated)
+                except ValidationError as ve:
+                    return {'__error': f'输入验证失败: [{ve.field}] {ve.reason}'}
+                return data
             return {}
         except json.JSONDecodeError as e:
             return {'__error': f'JSON解析错误: {str(e)}'}
